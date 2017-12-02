@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+
+// load in environmental variables
+require('dotenv').load();
+
+var express = require('express'),
+    app = express(),
+    mongoose = require('mongoose'),
+    expressSanitizer = require('express-sanitizer'),
+    bodyParser = require('body-parser'),
+    cors = require('cors'),
+    // db_server = process.env.DB_ENV || 'mongodb://localhost:27017/exploringTech',
+    db_server = process.env.MONOGO_DB_URL,
+    port = process.env.PORT || 3000,
+    App = require('../models/txtCubeAppModel.js');
+
+    
+mongoose.connect(db_server);
+mongoose.connection.on('connected', function () {
+    console.log("Connected to " + db_server + " DB!")
+});
+mongoose.connection.on('error', function (err) {
+    console.log("Connection error " + err);
+    console.log("Terminating application");
+    process.exit(0);
+})
+
+
+
+console.log("running cron");
+App.updateMany({ signed_in: true }, { $set: { signed_in: false } }, function (err, result) {
+    if (err) {
+        console.log(err);
+    }
+    mongoose.disconnect();
+});
